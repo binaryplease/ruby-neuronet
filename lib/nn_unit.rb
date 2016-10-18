@@ -9,7 +9,6 @@ class NNConnection
 		end
 end
 
-
 class NNUnit
 		attr_accessor :activity, :children, :id
 
@@ -57,8 +56,6 @@ class NNOutputUnit < NNUnit
 				return @activity
 		end
 end
-
-
 
 class NNLayer
 

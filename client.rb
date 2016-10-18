@@ -26,6 +26,14 @@ net.train1
 
 # Run !
 output = net.run
+
+
+expected =[0,2,4,-6,0,0,-10,0,0,0] 
+
+err = net.calculate_error_vec(output, expected)
 puts "output was #{output} "
+puts "expected was #{expected} "
+
+puts "error vector is #{err}"
 
 
