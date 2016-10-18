@@ -24,9 +24,12 @@ class NNUnit
 		end
 
 		def propagate
+				out = []
 				@children.each do |c|
 						c.unit.trigger(@activity * c.weight)
+						out << @acitivity
 				end
+				return out
 		end
 
 		def trigger(input)
@@ -50,7 +53,8 @@ class NNOutputUnit < NNUnit
 		@type = :output
 
 		def propagate
-				puts "outuput of #{@id}: #{@activity}"
+				#puts "outuput of #{@id}: #{@activity}"
+				return @activity
 		end
 end
 
@@ -87,9 +91,11 @@ class NNLayer
 		end
 
 		def propagate
+				output = []
 				@units.each do |unit|
-						unit.propagate
+						output << unit.propagate
 				end
+				return output
 		end
 end
 
@@ -106,17 +112,19 @@ class NNNet
 						raise("input doesnt match size")
 				end
 
+						puts "input: #{input_vec}"
 				net[0].units.each_with_index do |unit, index|
-						puts "setting #{input_vec[index]}"
 						unit.activity = input_vec[index]
 				end
 		end
 
 		def run
+				output = []
 				@net.each_with_index do |layer, i|
 						puts "running layer: #{i}"
-						layer.propagate
+						output = layer.propagate
 				end
+				return output
 		end
 
 
@@ -138,7 +146,7 @@ class NNNet
 				@net << layer_first
 
 				(layers - 2).times do |n|
-				layer_middle  = NNLayer.new(size, "hidden", n)
+						layer_middle  = NNLayer.new(size, "hidden", n)
 						@net << layer_middle
 				end
 
@@ -156,6 +164,22 @@ class NNNet
 								end
 						end
 				end
+		end
+
+		def connect_all_random(min, max)
+				@net.each_with_index do |l, n|
+						return if n >= (@net.length - 1)
+						l.units.each_with_index do |u, m|
+								net[n+1].units.each do |u2|
+										#puts "setting child for #{n}.#{m}"
+										u.children << NNConnection.new( u2 , range(min, max))
+								end
+						end
+				end
+		end
+
+		def range (min, max)
+				rand * (max-min) + min
 		end
 
 		def connect(layer_from, node_from, layer_desc, node_desc, weight)

@@ -25,6 +25,7 @@ net.add_connection_weight(0,0,0,1)
 net.train1
 
 # Run !
-net.run
+output = net.run
+puts "output was #{output} "
 
 
