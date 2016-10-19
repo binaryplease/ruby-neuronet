@@ -22,6 +22,7 @@ class NNUnit
 				@children = []
 		end
 
+
 		def propagate
 				out = []
 				@children.each do |c|
@@ -87,6 +88,11 @@ class NNLayer
 
 		end
 
+		def size
+				return @units.length
+
+		end
+
 		def propagate
 				output = []
 				@units.each do |unit|
@@ -104,21 +110,22 @@ class NNNet
 		include NNTrainer
 
 		def input(input_vec)
-				if input_vec.length !=@size
-						puts "input was #{input_vec.length} size is #{size}"
+				@init_input_vec = input_vec
+				if input_vec.length !=@layers[0].size
+						puts "input was #{input_vec.length} size is #{@layers[0].size}"
 						raise("input doesnt match size")
 				end
 
-						puts "input: #{input_vec}"
-				net[0].units.each_with_index do |unit, index|
+				#puts "input: #{input_vec}"
+				@layers[0].units.each_with_index do |unit, index|
 						unit.activity = input_vec[index]
 				end
 		end
 
 		def run
 				output = []
-				@net.each_with_index do |layer, i|
-						puts "running layer: #{i}"
+				@layers.each_with_index do |layer, i|
+						#puts "running layer: #{i}"
 						output = layer.propagate
 				end
 				return output
@@ -126,7 +133,9 @@ class NNNet
 
 
 		def initialize (size, layers)
-				@size = size
+
+				@init_size = size
+				@init_layers = layers
 				if layers < 2
 						raise "to small layers"
 				end
@@ -139,23 +148,41 @@ class NNNet
 				layer_first = NNLayer.new(size, "input", 0)
 				layer_last = NNLayer.new(size, "output", layers)
 
-				@net = []
-				@net << layer_first
+				@layers = []
+				@layers << layer_first
 
 				(layers - 2).times do |n|
 						layer_middle  = NNLayer.new(size, "hidden", n)
-						@net << layer_middle
+						@layers << layer_middle
 				end
 
-				@net << layer_last
+				@layers << layer_last
 
 		end
 
+
+		# How many layers the net has
+		def depth
+				return @layers.length
+		end
+
+		# How many nodes per layer
+		def size(layer =0)
+				return @layers[layer].size
+		end
+
+		# Reset the network keeping original input vector
+		def reset
+				@layers = []
+				initialize(@init_size, @init_layers)
+				input(@init_input_vec)
+		end
+
 		def connect_all(weight)
-				@net.each_with_index do |l, n|
-						return if n >= (@net.length - 1)
+				@layers.each_with_index do |l, n|
+						return if n >= (@layers.length - 1)
 						l.units.each_with_index do |u, m|
-								net[n+1].units.each do |u2|
+								@layers[n+1].units.each do |u2|
 										#puts "setting child for #{n}.#{m}"
 										u.children << NNConnection.new( u2 , weight)
 								end
@@ -163,33 +190,56 @@ class NNNet
 				end
 		end
 
-		def connect_all_random(min, max)
-				@net.each_with_index do |l, n|
-						return if n >= (@net.length - 1)
-						l.units.each_with_index do |u, m|
-								net[n+1].units.each do |u2|
+
+		def connect_all_predefined(weights)
+
+				#if weights.length != @num_connections
+				#raise("wrong number of weights (#{weights.length}  for #{@num_connections} connections)")
+				#end
+
+				count = 0
+
+				@layers.each_with_index do |l, n| # each layer
+						return if n >= (@layers.length - 1)
+						l.units.each_with_index do |u, m| #each unit in layer
+								u.disconnect
+								@layers[n+1].units.each do |u2|
 										#puts "setting child for #{n}.#{m}"
-										u.children << NNConnection.new( u2 , range(min, max))
+										u.children << NNConnection.new( u2 , weights[count])
+										count += 1
 								end
 						end
 				end
 		end
+
+
+		#def connect_all_random(min, max)
+		#@layers.each_with_index do |l, n|
+		#return if n >= (@layers.length - 1)
+		#l.units.each_with_index do |u, m|
+		#net[n+1].units.each do |u2|
+		##puts "setting child for #{n}.#{m}"
+		#u.children << NNConnection.new( u2 , range(min, max))
+		#count += 1
+		#end
+		#end
+		#end
+		#end
 
 		def range (min, max)
 				rand * (max-min) + min
 		end
 
 		def connect(layer_from, node_from, layer_desc, node_desc, weight)
-				@net[layer_from].units[node_from].add_connection(@net[layer_desc].units[node_desc],weight)
-
+				@layers[layer_from].units[node_from].add_connection(@layers[layer_desc].units[node_desc],weight)
 		end
 
 		def set_connection_weight(layer_src, node_src, node_dest, weight)
-				@net[layer_src].units[node_src].children.select{ |c| c.unit.id = node_dest}.first.weight = weight
+				@layers[layer_src].units[node_src].children.select{ |c| c.unit.id = node_dest}.first.weight = weight
 		end
 
 		def add_connection_weight(layer_src, node_src, node_dest, weight)
-				@net[layer_src].units[node_src].children.select{ |c| c.unit.id = node_dest}.first.weight += weight
+				@layers[layer_src].units[node_src].children.select{ |c| c.unit.id = node_dest}.first.weight += weight
 		end
 
 end
