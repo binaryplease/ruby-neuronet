@@ -3,8 +3,6 @@ require './lib/nn_unit'
 # Create new net with 3 layers and 10 units each
 net = NNNet.new(10,3)
 
-# Set the input vector
-input = [1,1,1,1,1,1,1,1,1,1]
 
 # Create two connections
 #net.connect(0,0,1,0,1)
@@ -23,8 +21,9 @@ input = [1,1,1,1,1,1,1,1,1,1]
 
 
 
-expected =[0,2,4,-6,0,0,-10,0,0,0] 
-net.train0(-10,10,10, input, expected)
+input = [1,1,1,1,1,1,1,1,1,1]
+expected =[0,0,0,0,0,0,0,0,0,0] 
+net.train0(-1,1,140000, input, expected)
 
 #err = net.calculate_error_vec(output, expected)
 #puts "output was #{output} "

@@ -109,20 +109,8 @@ class NNNet
 
 		include NNTrainer
 
-		def input(input_vec)
-				@init_input_vec = input_vec
-				if input_vec.length !=@layers[0].size
-						puts "input was #{input_vec.length} size is #{@layers[0].size}"
-						raise("input doesnt match size")
-				end
-
-				#puts "input: #{input_vec}"
-				@layers[0].units.each_with_index do |unit, index|
-						unit.activity = input_vec[index]
-				end
-		end
-
-		def run
+		def run(input_vec)
+				input(input_vec)
 				output = []
 				@layers.each_with_index do |layer, i|
 						#puts "running layer: #{i}"
@@ -175,7 +163,6 @@ class NNNet
 		def reset
 				@layers = []
 				initialize(@init_size, @init_layers)
-				input(@init_input_vec)
 		end
 
 		def connect_all(weight)
@@ -241,6 +228,21 @@ class NNNet
 		def add_connection_weight(layer_src, node_src, node_dest, weight)
 				@layers[layer_src].units[node_src].children.select{ |c| c.unit.id = node_dest}.first.weight += weight
 		end
+		
+		private
+		def input(input_vec)
+				@init_input_vec = input_vec
+				if input_vec.length !=@layers[0].size
+						puts "input was #{input_vec.length} size is #{@layers[0].size}"
+						raise("input doesnt match size")
+				end
+
+				#puts "input: #{input_vec}"
+				@layers[0].units.each_with_index do |unit, index|
+						unit.activity = input_vec[index]
+				end
+		end
+
 
 end
 

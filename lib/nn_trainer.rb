@@ -21,7 +21,6 @@ module NNTrainer
 				puts "training with method 0"
 				puts "======================"
 
-				input(input)
 
 				puts "layers #{depth} "
 				puts "nodes  #{@layers[0].size}"
@@ -46,7 +45,7 @@ module NNTrainer
 						#puts weights.inject(:+)
 
 						# Run
-						output = run
+						output = run(input)
 
 						# Calculate error
 						current_error = calculate_error_total(output, expected)
@@ -56,14 +55,17 @@ module NNTrainer
 								puts "setting new error"
 								best_weights = weights
 								error = current_error
+								puts "Current error: #{error}"
 						end
 						first = false
-
-						puts " error current: #{current_error} best: #{error}"
-
 				end
 
+				
+
 				puts "training with method 0 complete"
+				puts "Best found weights"
+				puts "======================"
+				puts best_weights.to_s
 				puts "======================"
 
 
@@ -71,16 +73,15 @@ module NNTrainer
 
 		def rand_array(min, max, length)
 
-				length.times.map{ min + Random.rand(max-min + 1) }
+				length.times.map{ min + (Random.rand()*(-min+max) )}
 
 		end
 
 		def train1
-				#Hebb-Regel
+
 		end
 
 		def train2
-				#Delta-Regel
 		end
 
 		def train3
